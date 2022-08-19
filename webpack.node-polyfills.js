@@ -1,9 +1,9 @@
 module.exports = {
   // Enable the assert library polyfill because that is used in tests
-  assert: true,
+  // assert: true,
   // The assert polyfill from github.com/browserify/commonjs-assert
   // also requires the `global` polyfill.
-  global: true,
+  // global: true,
 
   // Turn off all other Node.js API polyfills for the browser tests to
   // make sure that we are not attempting to use Node-specific APIs in
@@ -13,9 +13,9 @@ module.exports = {
   // optimized implementations of the specific needed functionality
   // rather than bringing in (sometimes large) polyfills for the
   // corresponding Node APIs.
-  Buffer: false,
-  __dirname: false,
-  __filename: false,
+  // Buffer: false,
+  // __dirname: false,
+  // __filename: false,
   buffer: false,
   child_process: false,
   cluster: false,
@@ -48,5 +48,5 @@ module.exports = {
   url: false,
   util: false,
   vm: false,
-  zlib: false
+  zlib: false,
 };

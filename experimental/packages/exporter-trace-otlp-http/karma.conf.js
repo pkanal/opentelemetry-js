@@ -14,13 +14,25 @@
  * limitations under the License.
  */
 
-const karmaWebpackConfig = require('../../../karma.webpack');
-const karmaBaseConfig = require('../../../karma.base');
+const karmaWebpackConfig = require("../../../karma.webpack");
+const karmaBaseConfig = require("../../../karma.base");
+const merge = require("lodash.merge");
+const path = require("path");
+const webpack = require("webpack");
 
 module.exports = (config) => {
-  config.set(Object.assign({}, karmaBaseConfig, {
-    webpack: karmaWebpackConfig,
-    files: ['test/browser/index-webpack.ts'],
-    preprocessors: { 'test/browser/index-webpack.ts': ['webpack'] }
-  }))
+  config.set(
+    merge({}, karmaBaseConfig, {
+      webpack: merge({}, karmaWebpackConfig, {
+        output: { path: path.join(__dirname, "build") },
+        plugins: [
+          new webpack.ProvidePlugin({
+            process: require.resolve("process/browser"),
+          }),
+        ],
+      }),
+      files: ["test/browser/index-webpack.ts"],
+      preprocessors: { "test/browser/index-webpack*.ts": ["webpack"] },
+    })
+  );
 };

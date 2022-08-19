@@ -15,20 +15,27 @@
  */
 
 module.exports = {
-  listenAddress: 'localhost',
-  hostname: 'localhost',
-  browsers: ['ChromeHeadless'],
-  frameworks: ['mocha'],
+  listenAddress: "localhost",
+  hostname: "localhost",
+  browsers: ["ChromeHeadless"],
+  frameworks: ["mocha", "webpack"],
+  plugins: [
+    "karma-webpack",
+    "karma-mocha",
+    "karma-coverage-istanbul-reporter",
+    "karma-spec-reporter",
+    "karma-chrome-launcher",
+  ],
   coverageIstanbulReporter: {
-    reports: ['html', 'json'],
-    dir: '.nyc_output',
-    fixWebpackSourcePaths: true
+    reports: ["html", "json"],
+    dir: ".nyc_output",
+    fixWebpackSourcePaths: true,
   },
-  reporters: ['spec', 'coverage-istanbul'],
-  files: ['test/index-webpack.ts'],
+  reporters: ["spec", "coverage-istanbul"],
+  files: ["test/index-webpack.ts"],
   preprocessors: {
-    'test/index-webpack*.ts': ['webpack']
+    "test/index-webpack*.ts": ["webpack"],
   },
   webpackMiddleware: { noInfo: true },
-  logLevel: "DEBUG"
+  logLevel: "DEBUG",
 };

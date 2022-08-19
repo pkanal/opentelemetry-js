@@ -13,37 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-const webpackNodePolyfills = require('./webpack.node-polyfills.js');
-const webpack = require('webpack');
+const webpackNodePolyfills = require("./webpack.node-polyfills.js");
 
 // This is the webpack configuration for browser Karma tests with coverage.
 module.exports = {
-  mode: 'development',
-  target: 'web',
-  output: { filename: 'bundle.js' },
-  resolve: { extensions: ['.ts', '.js'] },
-  devtool: 'eval-source-map',
-  plugins: [
-    new webpack.ProvidePlugin({
-      process: 'process/browser',
-    }),
-  ],
+  mode: "development",
+  target: "web",
+  resolve: {
+    extensions: [".ts", ".js"],
+    fallback: {
+      // This setting configures Node polyfills for the browser that will be
+      // added to the webpack bundle for Karma tests.
+      ...webpackNodePolyfills,
+    },
+  },
+  node: {
+    global: true,
+    __filename: false,
+    __dirname: false,
+  },
+  devtool: "eval-source-map",
   module: {
     rules: [
-      { test: /\.ts$/, use: 'ts-loader' },
+      { include: /\.ts$/, use: "ts-loader" },
       {
-        enforce: 'post',
+        enforce: "post",
         exclude: /(node_modules|\.test\.[tj]sx?$)/,
         test: /\.ts$/,
         use: {
-          loader: '@jsdevtools/coverage-istanbul-loader',
-          options: { esModules: true }
-        }
+          loader: "@jsdevtools/coverage-istanbul-loader",
+          options: { esModules: true },
+        },
       },
-      // This setting configures Node polyfills for the browser that will be
-      // added to the webpack bundle for Karma tests.
-      { parser: { node: webpackNodePolyfills } }
-    ]
-  }
+    ],
+  },
 };
