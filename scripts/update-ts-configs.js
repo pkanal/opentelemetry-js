@@ -51,6 +51,8 @@ const ignoredLernaProjects = [
   'examples/otlp-exporter-node',
   'examples/opentelemetry-web',
   'examples/http',
+  'examples/hello-world-cjs',
+  'examples/hello-world-esm',
   'examples/https',
 ];
 

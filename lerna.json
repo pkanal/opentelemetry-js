@@ -12,6 +12,8 @@
     "examples/otlp-exporter-node",
     "examples/opentelemetry-web",
     "examples/http",
-    "examples/https"
+    "examples/https",
+    "examples/hello-world-cjs",
+    "examples/hello-world-esm"
   ]
 }

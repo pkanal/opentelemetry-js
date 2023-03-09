@@ -18,6 +18,7 @@ import { SpanStatusCode, SpanStatus, Span } from '@opentelemetry/api';
 import type * as grpcTypes from 'grpc';
 import type * as grpcJsTypes from '@grpc/grpc-js';
 import { IgnoreMatcher } from './types';
+// import { normalize } from 'path';
 
 // e.g., "dns:otel-productcatalogservice:8080" or "otel-productcatalogservice:8080" or "127.0.0.1:8080"
 export const URI_REGEX =
@@ -135,15 +136,19 @@ export function metadataCapture(
     ] of normalizedMetadataAttributes) {
       const metadataValues = metadata
         .get(capturedMetadata)
-        .flatMap(value => (typeof value === 'string' ? value.toString() : []));
+        .map((value: { toString: () => any }) =>
+          typeof value === 'string' ? value.toString() : []
+        );
 
-      if (metadataValues === undefined || metadataValues === []) {
+      if (metadataValues === undefined) {
         continue;
+      } else {
+        if (normalizedMetadata == undefined) {
+          continue;
+        }
       }
 
-      const key = `rpc.${type}.metadata.${normalizedMetadata}`;
-
-      span.setAttribute(key, metadataValues);
+      // const key = `rpc.${type}.metadata.${normalizedMetadata}`;
     }
   };
 }

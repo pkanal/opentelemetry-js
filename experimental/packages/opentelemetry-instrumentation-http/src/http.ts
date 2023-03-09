@@ -108,15 +108,18 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     InstrumentationNodeModuleDefinition<Https>,
     InstrumentationNodeModuleDefinition<Http>
   ] {
+    console.log('i am in init');
     return [this._getHttpsInstrumentation(), this._getHttpInstrumentation()];
   }
 
   private _getHttpInstrumentation() {
+    console.log('oh heyyy i am in _getHttpInstrumentation before the return statement')
     return new InstrumentationNodeModuleDefinition<Http>(
       'http',
       ['*'],
       moduleExports => {
-        this._diag.debug(`Applying patch for http@${this._version}`);
+        console.log('i am right at the line where i should add the patch');
+        this._diag.debug(`Applying THA patch for http@${this._version}`);
         if (isWrapped(moduleExports.request)) {
           this._unwrap(moduleExports, 'request');
         }
@@ -201,9 +204,11 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
    * Creates spans for incoming requests, restoring spans' context if applied.
    */
   protected _getPatchIncomingRequestFunction(component: 'http' | 'https') {
+    console.log('i am in getpatchincomingrequestfunction');
     return (
       original: (event: string, ...args: unknown[]) => boolean
     ): ((this: unknown, event: string, ...args: unknown[]) => boolean) => {
+      console.log('i am in getpatchincomingrequestfunction return statement');
       return this._incomingRequestFunction(component, original);
     };
   }
@@ -213,6 +218,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
    * tracing.
    */
   protected _getPatchOutgoingRequestFunction(component: 'http' | 'https') {
+    console.log('i am in getpatchoutgoingrequestfunction');
     return (original: Func<http.ClientRequest>): Func<http.ClientRequest> => {
       return this._outgoingRequestFunction(component, original);
     };
@@ -224,6 +230,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
       ...args: HttpRequestArgs
     ) => http.ClientRequest
   ) {
+    console.log('i am in getpatchoutgoinggetfunction');
     return (_original: Func<http.ClientRequest>): Func<http.ClientRequest> => {
       // Re-implement http.get. This needs to be done (instead of using
       // getPatchOutgoingRequestFunction to patch it) because we need to
@@ -311,6 +318,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     startTime: HrTime,
     metricAttributes: MetricAttributes
   ): http.ClientRequest {
+    console.log('i am in traceclientrequest');
     if (this._getConfig().requestHook) {
       this._callRequestHook(span, request);
     }
@@ -323,6 +331,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     request.prependListener(
       'response',
       (response: http.IncomingMessage & { aborted?: boolean }) => {
+        console.log('i am in prependlistener');
         const responseAttributes =
           utils.getOutgoingRequestAttributesOnResponse(response);
         span.setAttributes(responseAttributes);
@@ -749,6 +758,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     options: SpanOptions,
     ctx = context.active()
   ) {
+    console.log(`hello did we get here to _startHttpSpan?`);
     /*
      * If a parent is required but not present, we use a `NoopSpan` to still
      * propagate context without recording it.
@@ -798,6 +808,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     span: Span,
     response: http.IncomingMessage | http.ServerResponse
   ) {
+    console.log('i am in _callResponseHook');
     safeExecuteInTheMiddle(
       () => this._getConfig().responseHook!(span, response),
       () => {},
@@ -805,10 +816,11 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     );
   }
 
-  private _callRequestHook(
-    span: Span,
-    request: http.ClientRequest | http.IncomingMessage
-  ) {
+    private _callRequestHook(
+      span: Span,
+      request: http.ClientRequest | http.IncomingMessage
+      ) {
+    console.log('i am in _callRequestHook');
     safeExecuteInTheMiddle(
       () => this._getConfig().requestHook!(span, request),
       () => {},
@@ -820,7 +832,9 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
     request: http.IncomingMessage | http.RequestOptions,
     hookFunc: Function | undefined
   ) {
+    console.log('i am in _callStartSpanHook');
     if (typeof hookFunc === 'function') {
+      console.log(`typeof hookFunc: ${typeof hookFunc}`);
       return safeExecuteInTheMiddle(
         () => hookFunc(request),
         () => {},
@@ -831,7 +845,7 @@ export class HttpInstrumentation extends InstrumentationBase<Http> {
 
   private _createHeaderCapture() {
     const config = this._getConfig();
-
+    console.log('i am in _createHeaderCapture');
     return {
       client: {
         captureRequestHeaders: utils.headerCapture(

@@ -5,10 +5,16 @@ const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
 const { Resource } = require('@opentelemetry/resources');
 const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
-const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-base');
+const {
+  SimpleSpanProcessor,
+  BatchSpanProcessor,
+} = require('@opentelemetry/sdk-trace-base');
 const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
+const {
+  OTLPTraceExporter,
+} = require('@opentelemetry/exporter-trace-otlp-http');
 
 const EXPORTER = process.env.EXPORTER || '';
 
@@ -26,7 +32,14 @@ module.exports = (serviceName) => {
     exporter = new JaegerExporter();
   }
 
+  const otlpExporter = new OTLPTraceExporter({
+    url: 'https://api.honeycomb.io/v1/traces',
+    headers: {
+      'x-honeycomb-team': 'redacted',
+    },
+  });
   provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+  provider.addSpanProcessor(new BatchSpanProcessor(otlpExporter));
 
   // Initialize the OpenTelemetry APIs to use the NodeTracerProvider bindings
   provider.register();

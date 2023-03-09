@@ -30,6 +30,9 @@
       "path": "experimental/packages/opentelemetry-instrumentation-fetch/tsconfig.esm.json"
     },
     {
+      "path": "experimental/packages/opentelemetry-instrumentation-http/tsconfig.esm.json"
+    },
+    {
       "path": "experimental/packages/opentelemetry-instrumentation-xml-http-request/tsconfig.esm.json"
     },
     {
