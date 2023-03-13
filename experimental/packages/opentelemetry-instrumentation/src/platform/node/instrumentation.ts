@@ -25,7 +25,7 @@ import {
 import { InstrumentationModuleDefinition } from './types';
 import { diag } from '@opentelemetry/api';
 import * as RequireInTheMiddle from 'require-in-the-middle';
-
+import * as ImportInTheMiddle from 'import-in-the-middle';
 /**
  * Base abstract class for instrumenting node plugins
  */
@@ -100,12 +100,12 @@ export abstract class InstrumentationBase<T = any>
     module: InstrumentationModuleDefinition<T>,
     exports: T,
     name: string,
-    baseDir?: string
+    baseDir?: string | void
   ): T {
-    console.log(`mahh module: ${module}`);
-    console.log(`mahh exports: ${exports}`);
-    console.log(`mahh name: ${name}`);
-    console.log(`mahh baseDir: ${baseDir}`);
+    // console.log(`mahh module: ${module}`);
+    // console.log(`mahh exports: ${exports}`);
+    // console.log(`mahh name: ${name}`);
+    // console.log(`mahh baseDir: ${baseDir}`);
     if (!baseDir) {
       if (typeof module.patch === 'function') {
         module.moduleExports = exports;
@@ -170,10 +170,15 @@ export abstract class InstrumentationBase<T = any>
     }
 
     this._warnOnPreloadedModules();
-    console.log(`we are inside of enable() in instrumentation`);
-    console.log(`these are this._modules: ${JSON.stringify(this._modules)}`);
     for (const module of this._modules) {
-      console.log(`was the module : ${module}`);
+      const hookFn: ImportInTheMiddle.HookFn = (exports, name, baseDir) => {
+        return this._onRequire<typeof exports>(
+          module as unknown as InstrumentationModuleDefinition<typeof exports>,
+          exports,
+          name,
+          baseDir
+        );
+      };
       const onRequire: RequireInTheMiddle.OnRequireFn = (
         exports,
         name,
@@ -193,12 +198,11 @@ export abstract class InstrumentationBase<T = any>
       // For an absolute paths, we must create a separate instance of `RequireInTheMiddle`.
       const hook = path.isAbsolute(module.name)
         ? RequireInTheMiddle([module.name], { internals: true }, onRequire)
-        : this._requireInTheMiddleSingleton.register(module.name, onRequire);
-
-      console.log(
-        `mah hook is it absolute i wonder: :${path.isAbsolute(module.name)}`
-      );
-
+        : this._requireInTheMiddleSingleton.register(
+            module.name,
+            onRequire,
+            hookFn
+          );
       this._hooks.push(hook);
     }
   }

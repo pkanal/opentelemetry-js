@@ -22,14 +22,18 @@ import { ModuleNameTrie, ModuleNameSeparator } from './ModuleNameTrie';
 export type Hooked = {
   moduleName: string;
   onRequire: RequireInTheMiddle.OnRequireFn;
+  hookFn: ImportInTheMiddle.HookFn;
 };
 
 /**
  * We are forced to re-type there because ImportInTheMiddle is exported as normal CJS
  * in the JS files but transpiled ESM (with a default export) in its typing.
  */
-const ESMHook =
-  ImportInTheMiddle as unknown as typeof ImportInTheMiddle.default;
+const ESMHook = ImportInTheMiddle as unknown as (
+  module: any,
+  options: any,
+  hookfn: any
+) => void;
 
 /**
  * Whether Mocha is running in this process
@@ -69,24 +73,7 @@ export class RequireInTheMiddleSingleton {
 
   private _initialize() {
     console.log(`did we make it in here?? we in init. yes in cjs and esm`);
-    const onHook = (
-      exports: any,
-      name: string,
-      basedir: string | undefined | void
-    ) => {
-      // console.log(
-      //   `inside onHook in initalize in ritm singleton - never in esm`
-      // );
-      // console.log(
-      //   `inside onHook in initalize in ritm singleton - exports: ${exports}`
-      // );
-      // console.log(
-      //   `inside onHook in initalize in ritm singleton - name: ${name}`
-      // );
-      // console.log(
-      //   `inside onHook in initalize in ritm singleton - basedir: ${basedir}`
-      // );
-      // For internal files on Windows, `name` will use backslash as the path separator
+    const onHook = (exports: any, name: string, basedir: string | void) => {
       const normalizedModuleName = normalizePathSeparators(name);
 
       const matches = this._moduleNameTrie.search(normalizedModuleName, {
@@ -96,17 +83,17 @@ export class RequireInTheMiddleSingleton {
         // `basedir` is always `undefined` for core modules.
         fullOnly: basedir === undefined,
       });
-
-      for (const { onRequire } of matches) {
+      console.log(normalizedModuleName);
+      for (const { onRequire, hookFn } of matches) {
         exports = onRequire(exports, name, basedir ? basedir : undefined);
+        exports = hookFn(exports, name, basedir);
       }
-
       return exports;
     };
     // Intercept all `require` calls; we will filter the matching ones below
     RequireInTheMiddle(null, { internals: true }, onHook);
     // We can give no module to patch but this signature isn't exposed in typings
-    new ESMHook(null as any, { internals: true }, onHook);
+    // ESMHook(null as any, { internals: true }, onHook);
   }
 
   /**
@@ -118,11 +105,17 @@ export class RequireInTheMiddleSingleton {
    */
   register(
     moduleName: string,
-    onRequire: RequireInTheMiddle.OnRequireFn
+    onRequire: RequireInTheMiddle.OnRequireFn,
+    hookFn: ImportInTheMiddle.HookFn
   ): Hooked {
-    const hooked = { moduleName, onRequire };
-    console.log(`hooked: ${hooked}`);
+    const hooked = { moduleName, onRequire, hookFn };
     this._moduleNameTrie.insert(hooked);
+    //@ts-expect-error
+    new ESMHook(
+      [normalizePathSeparators(moduleName)],
+      { internals: true },
+      hookFn
+    );
     console.log(`this._moduleNameTrie: ${this._moduleNameTrie}`);
     return hooked;
   }

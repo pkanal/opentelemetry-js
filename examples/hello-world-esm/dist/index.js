@@ -6,6 +6,8 @@ import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor, } from '@
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import http from 'http';
+console.log(http);
 const serviceName = 'hello-esm';
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
 const tracerProvider = new NodeTracerProvider({
