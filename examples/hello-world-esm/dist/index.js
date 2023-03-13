@@ -7,6 +7,8 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import http from 'http';
+// have to import and use http for iitm to pick
+// up for monkey patching
 console.log(http);
 const serviceName = 'hello-esm';
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);

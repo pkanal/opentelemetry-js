@@ -72,7 +72,6 @@ export class RequireInTheMiddleSingleton {
   }
 
   private _initialize() {
-    console.log(`did we make it in here?? we in init. yes in cjs and esm`);
     const onHook = (exports: any, name: string, basedir: string | void) => {
       const normalizedModuleName = normalizePathSeparators(name);
 
@@ -83,7 +82,6 @@ export class RequireInTheMiddleSingleton {
         // `basedir` is always `undefined` for core modules.
         fullOnly: basedir === undefined,
       });
-      console.log(normalizedModuleName);
       for (const { onRequire, hookFn } of matches) {
         exports = onRequire(exports, name, basedir ? basedir : undefined);
         exports = hookFn(exports, name, basedir);
@@ -92,8 +90,6 @@ export class RequireInTheMiddleSingleton {
     };
     // Intercept all `require` calls; we will filter the matching ones below
     RequireInTheMiddle(null, { internals: true }, onHook);
-    // We can give no module to patch but this signature isn't exposed in typings
-    // ESMHook(null as any, { internals: true }, onHook);
   }
 
   /**
@@ -110,13 +106,7 @@ export class RequireInTheMiddleSingleton {
   ): Hooked {
     const hooked = { moduleName, onRequire, hookFn };
     this._moduleNameTrie.insert(hooked);
-    //@ts-expect-error
-    new ESMHook(
-      [normalizePathSeparators(moduleName)],
-      { internals: true },
-      hookFn
-    );
-    console.log(`this._moduleNameTrie: ${this._moduleNameTrie}`);
+    ESMHook([normalizePathSeparators(moduleName)], { internals: true }, hookFn);
     return hooked;
   }
 
@@ -129,7 +119,6 @@ export class RequireInTheMiddleSingleton {
     // Mocha runs all test suites in the same process
     // This prevents test suites from sharing a singleton
     if (isMocha) return new RequireInTheMiddleSingleton();
-    console.log('-------oh hey girl');
     return (this._instance =
       this._instance ?? new RequireInTheMiddleSingleton());
   }

@@ -102,10 +102,6 @@ export abstract class InstrumentationBase<T = any>
     name: string,
     baseDir?: string | void
   ): T {
-    // console.log(`mahh module: ${module}`);
-    // console.log(`mahh exports: ${exports}`);
-    // console.log(`mahh name: ${name}`);
-    // console.log(`mahh baseDir: ${baseDir}`);
     if (!baseDir) {
       if (typeof module.patch === 'function') {
         module.moduleExports = exports;
@@ -174,7 +170,7 @@ export abstract class InstrumentationBase<T = any>
       const hookFn: ImportInTheMiddle.HookFn = (exports, name, baseDir) => {
         return this._onRequire<typeof exports>(
           module as unknown as InstrumentationModuleDefinition<typeof exports>,
-          exports,
+          Object.assign({}, exports),
           name,
           baseDir
         );
@@ -184,8 +180,6 @@ export abstract class InstrumentationBase<T = any>
         name,
         baseDir
       ) => {
-        console.log(`onRequire exports: ${exports}`);
-
         return this._onRequire<typeof exports>(
           module as unknown as InstrumentationModuleDefinition<typeof exports>,
           exports,
